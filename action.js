@@ -206,6 +206,10 @@ class HidenCloudBot {
             const manageRes = await this.request('GET', `/service/${service.id}/manage`);
             const $ = cheerio.load(manageRes.data);
             const formToken = $('input[name="_token"]').val();
+            // 2. 获取 Current Due Date (通过 datepicker-title 属性定位)
+            // 这种方式最准确，因为该属性文字是固定的
+            const dueDate = $('input[datepicker-title^="Current Due Date"]').val();
+            this.log(`📅 到期日期 (${dueDate})`);
 
             this.log(`📅 提交续期 (${RENEW_DAYS}天)...`);
             await sleep(1000, 2000);
