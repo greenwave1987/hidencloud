@@ -203,19 +203,13 @@ class HidenCloudBot {
         this.log(`>>> 处理服务 ID: ${service.id}`);
 
         try {
-            const manageRes = await this.request('GET', `/service/${service.id}/manage`);
-            const $ = cheerio.load(manageRes.data);
-            const formToken = $('input[name="_token"]').val();
-            // 2. 获取 Current Due Date (通过 datepicker-title 属性定位)
-            // 这种方式最准确，因为该属性文字是固定的
-            const dueDate = $('input[datepicker-title^="Current Due Date"]').val();
-            this.log(`📅 到期日期 (${dueDate})`);
+            let tokeninfo = await getformToken(service)
 
             this.log(`📅 提交续期 (${RENEW_DAYS}天)...`);
             await sleep(1000, 2000);
 
             const params = new URLSearchParams();
-            params.append('_token', formToken);
+            params.append('_token', tokeninfo.formToken);
             params.append('days', RENEW_DAYS);
 
             const res = await this.request('POST', `/service/${service.id}/renew`, params.toString());
@@ -230,6 +224,25 @@ class HidenCloudBot {
 
         } catch (e) {
             this.log(`❌ 处理异常: ${e.message}`);
+        }
+    }
+
+    async getformToken(service) {
+
+        try {
+            const manageRes = await this.request('GET', `/service/${service.id}/manage`);
+            const $ = cheerio.load(manageRes.data);
+            const formToken = $('input[name="_token"]').val();
+            // 2. 获取 Current Due Date (通过 datepicker-title 属性定位)
+            // 这种方式最准确，因为该属性文字是固定的
+            const dueDate = $('input[datepicker-title^="Current Due Date"]').val();
+            this.log(`📅 到期日期 (${dueDate})`);
+            return { formToken, dueDate };
+
+
+        } catch (e) {
+            this.log(`❌ 处理异常: ${e.message}`);
+            return {};
         }
     }
 
@@ -572,14 +585,16 @@ async function sendTelegramNotification(summaryText) {
                     if (await bot.init()) {
                         for (const svc of bot.services) {
                             await bot.processService(svc);
+                            tokeninfo = await bot.getformToken(svc)
+                            svc['dueDate'] = tokeninfo.dueDate
                         }
-                        summary.push({ user: user.username, status: 'Success', services: bot.services.length });
+                        summary.push({ user: user.username, status: 'Success', services: bot.services });
                     } else {
-                        summary.push({ user: user.username, status: 'Failed (API Init)', services: 0 });
+                        summary.push({ user: user.username, status: 'Failed (API Init)', services: [] });
                     }
                 }
             } else {
-                summary.push({ user: user.username, status: 'Failed (Login)', services: 0 });
+                summary.push({ user: user.username, status: 'Failed (Login)', services: [] });
             }
 
         } catch (err) {
