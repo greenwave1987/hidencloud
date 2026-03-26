@@ -627,9 +627,23 @@ async function sendTelegramNotification(summaryText) {
 
     summary.forEach(s => {
         console.log(s);
-        const line = `User: ${s.user} | Status: ${s.status} | Services: ${s.services}`;
+    
+        let servicesText = '无';
+    
+        if (s.services && typeof s.services === 'object') {
+            const { id, dueDate, url } = s.services;
+            servicesText = `ID:${id} | 到期:${dueDate}`;
+        }
+    
+        const line = `User: ${s.user} | Status: ${s.status} | Services: ${servicesText}`;
         console.log(line);
-        summaryText += `👤 用户: \`${s.user}\`\n状态: ${s.status === 'Success' ? '✅ 成功' : '❌ 失败'}\n服务: ${Object.keys(s.services).join(' | ')}\n\n`;
+    
+        summaryText += 
+    `👤 用户: \`${s.user}\`
+    📊 状态: ${s.status === 'Success' ? '✅ 成功' : '❌ 失败'}
+    🧩 服务: ${servicesText}
+    
+    `;
     });
 
     await sendTelegramNotification(summaryText);
