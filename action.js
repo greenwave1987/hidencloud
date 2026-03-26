@@ -626,6 +626,7 @@ async function sendTelegramNotification(summaryText) {
     let summaryText = `*HidenCloud 续期任务报告 (${new Date().toLocaleDateString()})*\n\n`;
 
     summary.forEach(s => {
+        console.log(s);
         const line = `User: ${s.user} | Status: ${s.status} | Services: ${s.services}`;
         console.log(line);
         summaryText += `👤 用户: \`${s.user}\`\n状态: ${s.status === 'Success' ? '✅ 成功' : '❌ 失败'}\n服务: ${Object.keys(s.services).join(' | ')}\n\n`;
