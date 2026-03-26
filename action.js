@@ -630,8 +630,14 @@ async function sendTelegramNotification(summaryText) {
     
         let servicesText = '无';
     
-        if (s.services && typeof s.services === 'object') {
-            const { id, dueDate, url } = s.services;
+        if (Array.isArray(s.services)) {
+            // ✅ 数组情况（你的真实情况）
+            servicesText = s.services
+                .map(v => `ID:${v.id} | 到期:${v.dueDate}`)
+                .join(' | ');
+        } else if (s.services && typeof s.services === 'object') {
+            // ✅ 单对象情况
+            const { id, dueDate } = s.services;
             servicesText = `ID:${id} | 到期:${dueDate}`;
         }
     
