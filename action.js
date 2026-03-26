@@ -203,7 +203,7 @@ class HidenCloudBot {
         this.log(`>>> 处理服务 ID: ${service.id}`);
 
         try {
-            let tokeninfo = await getformToken(service)
+            let tokeninfo = await this.getformToken(service)
 
             this.log(`📅 提交续期 (${RENEW_DAYS}天)...`);
             await sleep(1000, 2000);
@@ -628,7 +628,7 @@ async function sendTelegramNotification(summaryText) {
     summary.forEach(s => {
         const line = `User: ${s.user} | Status: ${s.status} | Services: ${s.services}`;
         console.log(line);
-        summaryText += `👤 用户: \`${s.user}\`\n状态: ${s.status === 'Success' ? '✅ 成功' : '❌ 失败'}\n服务数: ${s.services}\n\n`;
+        summaryText += `👤 用户: \`${s.user}\`\n状态: ${s.status === 'Success' ? '✅ 成功' : '❌ 失败'}\n服务: ${s.services.toString()}\n\n`;
     });
 
     await sendTelegramNotification(summaryText);
